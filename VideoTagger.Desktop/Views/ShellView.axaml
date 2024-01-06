@@ -1,0 +1,30 @@
+<Window xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:VideoTagger.Desktop.ViewModels"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450" x:Class="VideoTagger.Desktop.Views.ShellView" x:DataType="vm:ShellViewModel" Icon="/Assets/avalonia-logo.ico" Title="VideoTagger.Desktop">
+
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <vm:ShellViewModel/>
+    </Design.DataContext>
+    <Grid ColumnDefinitions="20,auto,*,20" RowDefinitions="auto,auto,*,20">
+        <DockPanel Grid.Row="0" Grid.ColumnSpan="4">
+            <Menu DockPanel.Dock="Top">
+                <MenuItem Header="_File">
+                    <MenuItem Header="_Open Video Folder" Command="{Binding OpenVideoFolderCommand}" />
+                    <MenuItem Header="_Open Config File" />
+                    <Separator/>
+                    <MenuItem Header="_Exit"/>
+                </MenuItem>
+                <!-- <MenuItem Header="_Edit">
+                    <MenuItem Header="Copy"/>
+                    <MenuItem Header="Paste"/>
+                </MenuItem> -->
+            </Menu>
+        </DockPanel>
+        <ContentControl Content="{Binding Content}" Grid.Row="1" Grid.RowSpan="2" Grid.Column="1" Grid.ColumnSpan="2" />
+    </Grid>
+
+</Window>
