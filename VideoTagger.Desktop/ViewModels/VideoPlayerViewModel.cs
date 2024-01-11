@@ -117,7 +117,11 @@ namespace VideoTagger.Desktop.ViewModels
 
         public void PlayCurrentVideo()
         {
-            index=Math.Clamp(index,0,Videos.Count);
+            if (Videos.Count == 0)
+            {
+                return;
+            }
+            index = Math.Clamp(index, 0, Videos.Count);
             var video = Videos[index];
             if (string.IsNullOrWhiteSpace(video))
             {

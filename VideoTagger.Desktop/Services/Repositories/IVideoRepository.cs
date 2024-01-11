@@ -13,5 +13,6 @@ namespace VideoTagger.Desktop.Services.Repositories
         Task<string> GetVideoAsync(int index);
         Task SetVideosAsync(string[] videos);
         Task<int> GetCount();
+        void MarkHorror(string video);
     }
 }

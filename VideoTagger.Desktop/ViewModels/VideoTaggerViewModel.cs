@@ -112,6 +112,7 @@ namespace VideoTagger.Desktop.ViewModels
             VideoReviews = new(VideoReviews.OrderBy(x => x.Status).ToList());
             player.RemoveVideo(horror.VideoName);
             player.PlayCurrentVideo();
+            videoRepository.MarkHorror(video);
         }
         [RelayCommand]
         public async Task FormSelectionChanged(string formName)

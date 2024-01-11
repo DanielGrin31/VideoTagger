@@ -46,6 +46,10 @@ namespace VideoTagger.Desktop.Services.Repositories
             return Task.FromResult(videos.Length - 1 > currentIndex);
         }
 
+        public void MarkHorror(string video)
+        {
+            
+        }
 
         public Task<int> MoveNextVideo()
         {

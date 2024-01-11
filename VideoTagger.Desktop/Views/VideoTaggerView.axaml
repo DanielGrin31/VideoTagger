@@ -44,24 +44,6 @@
 					</ia:EventTriggerBehavior>
 				</i:Interaction.Behaviors>
 			</ComboBox>
-		<ListBox Grid.Row="1" Grid.Column="2" x:Name="VideosList" ItemsSource="{Binding VideoReviews}">
-			<ListBox.ItemTemplate>
-				<DataTemplate>
-					<StackPanel Background="{Binding Status,Converter={StaticResource VideoStatusToColor}}">
-					<TextBox IsReadOnly="True" MaxWidth="300" Text="{Binding VideoName}"/>
-					</StackPanel>
-				</DataTemplate>
-
-			</ListBox.ItemTemplate>	
-			<i:Interaction.Behaviors>
-				<ia:EventTriggerBehavior EventName="DoubleTapped" SourceObject="VideosList">
-					<ia:InvokeCommandAction Command="{Binding VideoSelectedCommand}"
-					PassEventArgsToCommand="True"/>
-					</ia:EventTriggerBehavior>
-			</i:Interaction.Behaviors>
-		</ListBox>
-
-		
-
+			<controls:VideoReviewsList Videos="{Binding VideoReviews}"></controls:VideoReviewsList>
 	</Grid>
 </UserControl>
