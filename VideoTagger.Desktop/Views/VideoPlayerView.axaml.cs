@@ -8,18 +8,13 @@ using VideoTagger.Desktop.ViewModels;
 
 namespace VideoTagger.Desktop.Views
 {
-    public partial class VideoTaggerView : UserControl
+    public partial class VideoPlayerView : UserControl
     {
-        public VideoTaggerView()
+        public VideoPlayerView()
         {
             InitializeComponent();
         }
-        protected override void OnLoaded(RoutedEventArgs e)
-        {
-            VideoTaggerViewModel? vm = (VideoTaggerViewModel?)DataContext;
-            vm.SetFormToDefault();
-            base.OnLoaded(e);
-        }
 
+        
     }
 }

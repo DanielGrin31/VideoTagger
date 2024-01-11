@@ -1,35 +1,32 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reactive.Subjects;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
+using VideoTagger.Desktop.Models;
 
 namespace VideoTagger.Desktop.Services
 {
     public class FormBuilder : IFormBuilder
     {
-        public List<Control> BuildForm(Dictionary<string, string> Fields,
+        public List<Control> BuildForm(IEnumerable<FormField> Fields,
          EventHandler<RoutedEventArgs> submitAction)
         {
             List<Control> controls = new List<Control>();
-            foreach ((string name, string desc) in Fields)
+            foreach (var field in Fields)
             {
                 Control control = null;
-                switch (desc.Split("_")[0])
+                switch (field.FieldType)
                 {
-                    case "text":
-                        control = BuildTextField(name, desc);
+                    case FormFieldType.TextBox:
+                        control = BuildTextField(field);
                         break;
-                    case "check":
-                        control = BuildCheckField(name, desc);
+                    case FormFieldType.CheckBox:
+                        control = BuildCheckField(field);
                         break;
-                    case "combo":
-                        control = BuildComboField(name, desc);
+                    case FormFieldType.ComboBox:
+                        control = BuildComboField(field);
                         break;
                     default:
                         break;
@@ -48,18 +45,18 @@ namespace VideoTagger.Desktop.Services
 
 
 
-        private Control BuildComboField(string name, string desc)
+        private Control BuildComboField(FormField field)
         {
             var stack = new StackPanel();
             stack.Orientation = Orientation.Horizontal;
             var fieldName = new TextBlock();
-            fieldName.Text = name;
+            fieldName.Text = field.Name;
             fieldName.VerticalAlignment = VerticalAlignment.Center;
             fieldName.Margin = new Thickness(0, 0, 5, 0);
             stack.Children.Add(fieldName);
             var comboBox = new ComboBox();
-            comboBox.Name = name;
-            var itemsDesc = desc.Split('_')[1].Split('|');
+            comboBox.Name = field.Name;
+            var itemsDesc = field.Options.Split(',');
             foreach (var item in itemsDesc)
             {
                 var comboItem = new ComboBoxItem();
@@ -71,24 +68,24 @@ namespace VideoTagger.Desktop.Services
             return stack;
         }
 
-        private Control BuildCheckField(string name, string desc)
+        private Control BuildCheckField(FormField field)
         {
             var checkBox = new CheckBox();
-            checkBox.Name = name;
-            checkBox.Content = string.Join(' ', desc.Split('_')[1..]);
+            checkBox.Name = field.Name;
+            checkBox.Content =  field.Options;
             return checkBox;
         }
 
-        private Control BuildTextField(string name, string desc)
+        private Control BuildTextField(FormField field)
         {
             var stack = new StackPanel();
             stack.Orientation = Orientation.Horizontal;
             var textBlock = new TextBlock();
-            textBlock.Text = name;
+            textBlock.Text = field.Name;
             textBlock.VerticalAlignment = VerticalAlignment.Center;
             textBlock.Margin = new Thickness(0, 0, 5, 0);
             var textBox = new TextBox();
-            textBox.Name = name;
+            textBox.Name = field.Name;
             stack.Children.Add(textBlock);
             stack.Children.Add(textBox);
             return stack;

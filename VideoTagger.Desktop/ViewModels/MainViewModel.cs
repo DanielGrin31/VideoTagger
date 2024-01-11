@@ -1,28 +1,30 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using System;
-using System.Collections.Generic;
+﻿using CommunityToolkit.Mvvm.Input;
+using VideoTagger.Desktop.Services;
 
 namespace VideoTagger.Desktop.ViewModels
 {
     public partial class MainViewModel : ViewModelBase
     {
+
+        public MainViewModel()
+        {
+        }
         [RelayCommand]
         public void NavigateTagger()
         {
             if (Parent is ShellViewModel shell)
             {
-                shell.NavigateTo<VideoTaggerViewModel>(GenerateForm);
+                shell.NavigateTo<VideoTaggerViewModel>();
+            }
+        }
+        [RelayCommand]
+        public void NavigateForm()
+        {
+            if (Parent is ShellViewModel shell)
+            {
+                shell.NavigateTo<CreateFormViewModel>();
             }
         }
 
-        private void GenerateForm(ViewModelBase vm)
-        {
-            if (vm is VideoTaggerViewModel videoTaggerVM)
-            {
-                videoTaggerVM.SetForm(new Dictionary<string, string>() { { "Name","text"},
-                 { "Soldier", "check_Is Soldier?" },{"Place","combo_outdoor|indoor"} });
-            }
-        }
     }
 }

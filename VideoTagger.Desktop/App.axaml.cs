@@ -8,6 +8,7 @@ using Avalonia.Markup.Xaml;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using VideoTagger.Desktop.Services;
+using VideoTagger.Desktop.Services.Forms;
 using VideoTagger.Desktop.Services.Repositories;
 using VideoTagger.Desktop.ViewModels;
 
@@ -54,7 +55,9 @@ public partial class App : Application
         });
         services.AddSingleton<IVideoRepository, VideoRepository>();
         services.AddTransient<VideoLoader>();
+        services.AddSingleton<IFormManager, FileFormManager>();
         services.AddTransient<IFormBuilder, FormBuilder>();
+        services.AddTransient<IFormExporter, JsonFormExporter>();
         RegisterViews(services);
     }
     internal static void RegisterViews(IServiceCollection services)

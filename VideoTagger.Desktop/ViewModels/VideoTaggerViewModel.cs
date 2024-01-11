@@ -1,10 +1,14 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Metadata;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using HarfBuzzSharp;
 using LibVLCSharp.Shared;
 using MediatR;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -16,99 +20,114 @@ using VideoTagger.Desktop.Services.Repositories;
 
 namespace VideoTagger.Desktop.ViewModels
 {
-    public partial class VideoTaggerViewModel : ViewModelBase, IDisposable
+    public partial class VideoTaggerViewModel : ViewModelBase
     {
-        public event EventHandler<FormConfigEventArgs>? FormConfigChanged;
-        public MediaPlayer MediaPlayer { get; }
+
+        private IFormManager _forms;
+        private readonly IVideoRepository videoRepository;
         [ObservableProperty]
-        [NotifyCanExecuteChangedFor(nameof(NextVideoCommand))]
-
-        private IVideoRepository _videos;
-        private LibVLC _vlc;
-        private bool hasVideo = false;
-        public VideoTaggerViewModel(IVideoRepository videoRepository)
+        private string[] formNames;
+        [ObservableProperty]
+        private string _selectedFormName = "default";
+        [ObservableProperty]
+        ViewModelBase _videoForm;
+        [ObservableProperty]
+        ViewModelBase _videoPlayer;
+        [ObservableProperty]
+        ObservableCollection<VideoReviewItem> _videoReviews = new ObservableCollection<VideoReviewItem>();
+        public VideoTaggerViewModel(
+        IFormManager formManager, IVideoRepository videoRepository)
         {
-            _videos = videoRepository;
-            _vlc = new();
-            _videos.SourceUpdated += UpdatedSource;
-            MediaPlayer = new MediaPlayer(_vlc);
+            var player = this.Build<VideoPlayerViewModel>();
+
+            var form = this.Build<VideoFormViewModel>();
+            form.FormSubmitted += SubmitForm;
+            VideoPlayer = player;
+            VideoForm = form;
+            _forms = formManager;
+            this.videoRepository = videoRepository;
+            this.videoRepository.SourceUpdated += VideoSourceUpdated;
+            FormNames = _forms.GetFormNames();
         }
 
-        private async void UpdatedSource(object? sender, EventArgs e)
+        private async void VideoSourceUpdated(object? sender, VideoSourceUpdatedEventArgs e)
         {
-            hasVideo = false;
-            await PlayVideo();
-            MediaPlayer.Pause();
+            await GenerateReviews(e.Videos);
+            ((VideoPlayerViewModel)VideoPlayer).Videos = VideoReviews.Where(x => x.Status == ReviewStatus.NotSeen).Select(x => x.VideoName).ToList();
+            // generate videos list on the right
         }
 
-        public void SetForm(Dictionary<string, string> fields)
+        private async Task GenerateReviews(string[] videos)
         {
-            FormConfigChanged?.Invoke(this, new FormConfigEventArgs() { Fields = fields });
-        }
-        [RelayCommand]
-        public void NavigateMain()
-        {
-            if (Parent is ShellViewModel shell)
+            var existing = await _forms.ParseAsync(SelectedFormName);
+            List<VideoReviewItem> reviews = new List<VideoReviewItem>();
+            foreach (var video in videos)
             {
-                shell.NavigateTo<MainViewModel>();
+                string relativePath = Path.GetRelativePath(VideoLoader.CurrentFolder, video);
+                if (existing.ContainsKey(relativePath))
+                {
+                    reviews.Add(new VideoReviewItem(video, ReviewStatus.Seen));
+                }
+                else
+                {
+                    reviews.Add(new VideoReviewItem(video, ReviewStatus.NotSeen));
+                }
             }
+            // parse existing form results
+            VideoReviews = new ObservableCollection<VideoReviewItem>(reviews.OrderBy(x => x.Status));
         }
-        [RelayCommand]
-        public async Task PrevVideo()
+        private async void SubmitForm(object? sender, FormSubmittedEventArgs e)
         {
-            await _videos.MovePrevVideo();
-            await PlayCurrentVideo();
-            hasVideo = true;
-        }
-
-        [RelayCommand()]
-        public async Task NextVideo()
-        {
-            await _videos.MoveNextVideo();
-            await PlayCurrentVideo();
-            hasVideo = true;
-        }
-        private async Task PlayCurrentVideo()
-        {
-            var video = await _videos.GetCurrentVideoAsync();
-            if (string.IsNullOrWhiteSpace(video))
+            var player = VideoPlayer as VideoPlayerViewModel;
+            string filePath = player.GetCurrentVideo();
+            if (string.IsNullOrEmpty(filePath))
             {
                 return;
             }
-            using var media = new Media(_vlc, video);
-            MediaPlayer.Play(media);
+            string relativePath = Path.GetRelativePath(VideoLoader.CurrentFolder, filePath);
+            await _forms.ExportAsync(e.Fields, relativePath, ((VideoFormViewModel)VideoForm).SelectedForm?.FormName ?? "default");
+            var review = VideoReviews.First(x => x.VideoName == filePath);
+            review!.Status = ReviewStatus.Seen;
+            VideoReviews = new(VideoReviews.OrderBy(x => x.Status).ToList());
+            player.RemoveVideo(filePath);
+            player.PlayCurrentVideo();
+        }
+
+        [RelayCommand]
+        public void VideoSelected(TappedEventArgs e)
+        {
+            var item = (e.Source as Control).DataContext as VideoReviewItem;
+            var player = ((VideoPlayerViewModel)VideoPlayer);
+            player.Videos = VideoReviews.Where(x => x.Status == ReviewStatus.NotSeen).Select(x => x.VideoName).ToList();
+            player.SelectVideo(item.VideoName);
+        }
+
+        [RelayCommand]
+        public async Task HorrorVideo()
+        {
+            var player = (VideoPlayer as VideoPlayerViewModel);
+            string video = player.GetCurrentVideo();
+            var horror = VideoReviews.First(x => x.VideoName == video);
+            horror.Status = ReviewStatus.Horror;
+            VideoReviews = new(VideoReviews.OrderBy(x => x.Status).ToList());
+            player.RemoveVideo(horror.VideoName);
+            player.PlayCurrentVideo();
         }
         [RelayCommand]
-        public async Task PlayVideo()
+        public async Task FormSelectionChanged(string formName)
         {
-            if (hasVideo)
-            {
-                MediaPlayer.Pause();
-            }
-            else
-            {
-                await PlayCurrentVideo();
-                hasVideo = true;
-            }
+            var config = _forms.GetConfig(formName);
+            ((VideoFormViewModel)VideoForm).SelectedForm = config;
+            var videos = await videoRepository.GetAllVideosAsync();
+            await GenerateReviews(videos);
         }
-        [RelayCommand]
-        public void StopVideo()
+        public void SetFormToDefault()
         {
-            MediaPlayer.Pause();
+            var formConfig = _forms.GetDefaultForm();
+            SelectedFormName = formConfig.FormName;
+
+            ((VideoFormViewModel)VideoForm).SelectedForm = formConfig;
         }
-
-        public void Dispose()
-        {
-            _vlc?.Dispose();
-            MediaPlayer?.Media?.Dispose();
-            MediaPlayer?.Dispose();
-        }
-
-        public void SubmitForm(Dictionary<string, string> values)
-        {
-
-        }
-
 
     }
 }

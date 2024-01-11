@@ -1,0 +1,48 @@
+<UserControl
+	xmlns="https://github.com/avaloniaui"
+	xmlns:vm="using:VideoTagger.Desktop.ViewModels"
+	xmlns:models="using:VideoTagger.Desktop.Models"
+	xmlns:vlc="clr-namespace:LibVLCSharp.Avalonia;assembly=LibVLCSharp.Avalonia"
+	xmlns:converters="clr-namespace:VideoTagger.Desktop.Converters;assembly=VideoTagger.Desktop"
+	xmlns:controls="clr-namespace:VideoTagger.Desktop.Controls;assembly=VideoTagger.Desktop"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  x:CompileBindings="False"
+            mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+            x:Class="VideoTagger.Desktop.Views.CreateFormView">
+	<Design.DataContext>
+		<!-- This only sets the DataContext for the previewer in an IDE,
+                        to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+		<vm:CreateFormViewModel/>
+	</Design.DataContext>
+
+  <UserControl.Resources>
+    <converters:OptionsFieldToBoolConverter x:Key="OptionsToTrue" />
+  </UserControl.Resources>
+	<Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,Auto">
+    <TextBlock  Grid.Row="0" Margin="0,0,50,0" Grid.Column="0" VerticalAlignment="Center">Form Name</TextBlock>
+    <TextBox Grid.Row="0" Grid.Column="1" Width="200" Text="{Binding FormName}" />
+    <TextBlock Grid.Row="1" Grid.Column="0">Fields</TextBlock>
+		<ItemsControl Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" ItemsSource="{Binding FieldsList}" >
+			<ItemsControl.ItemTemplate>
+				<DataTemplate>
+					<StackPanel Orientation="Horizontal" Margin="0 5">
+						<TextBox Width="150" Watermark="Field Name" Text="{Binding Name}" Margin="0,0,5,0"/>
+						<ComboBox SelectedIndex="{Binding FieldType}" Margin="5,0,10,0"  MaxDropDownHeight="100">
+							<ComboBoxItem>TextBox</ComboBoxItem>
+							<ComboBoxItem>CheckBox</ComboBoxItem>
+							<ComboBoxItem>ComboBox</ComboBoxItem>
+						</ComboBox>
+            <TextBox Width="150" Text="{Binding Options}" 
+            IsVisible="{Binding FieldType,Mode=OneWay, Converter={StaticResource OptionsToTrue}}" Watermark="Options"  > </TextBox>
+            <Button CommandParameter="{Binding}"
+                          Command="{Binding $parent[ItemsControl].DataContext.DeleteFieldCommand}" >Delete</Button>
+					</StackPanel>
+				</DataTemplate>
+			</ItemsControl.ItemTemplate>
+		</ItemsControl>
+    <Button Grid.Row="3" Command="{Binding AddFieldCommand}">Add Field</Button>
+    <Button Grid.Row="4" Command="{Binding SubmitFormCommand}">Submit</Button>
+  </Grid>
+</UserControl>

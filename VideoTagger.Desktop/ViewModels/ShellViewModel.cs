@@ -28,10 +28,15 @@ public partial class ShellViewModel : ViewModelBase
     }
     public void NavigateTo<T>(Action<ViewModelBase>? postNavigationAction = null) where T : ViewModelBase
     {
-        ViewModelBase vm = Ioc.Default.GetRequiredService<T>();
-        vm.Parent = this;
+        ViewModelBase vm=this.Build<T>();
         Content = vm;
         postNavigationAction?.Invoke(vm);
+    }
+
+    [RelayCommand]
+    public void NavigateMain()
+    {
+        NavigateTo<MainViewModel>();
     }
     [RelayCommand]
     public async Task OpenVideoFolder()

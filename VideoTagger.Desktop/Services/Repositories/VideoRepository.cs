@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using VideoTagger.Desktop.Models;
 
 namespace VideoTagger.Desktop.Services.Repositories
 {
@@ -10,7 +11,7 @@ namespace VideoTagger.Desktop.Services.Repositories
         private int currentIndex = 0;
         private string[] videos = new string[0];
 
-        public event EventHandler SourceUpdated;
+        public event EventHandler<VideoSourceUpdatedEventArgs> SourceUpdated;
 
         public Task<string[]> GetAllVideosAsync()
         {
@@ -68,7 +69,7 @@ namespace VideoTagger.Desktop.Services.Repositories
         {
             this.videos = videos;
             currentIndex = 0;
-            SourceUpdated?.Invoke(this, new EventArgs());
+            SourceUpdated?.Invoke(this, new VideoSourceUpdatedEventArgs(videos));
             return Task.CompletedTask;
         }
     }

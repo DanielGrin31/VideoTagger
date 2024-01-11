@@ -1,0 +1,27 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:vm="using:VideoTagger.Desktop.ViewModels"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
+	xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
+	xmlns:vlc="clr-namespace:LibVLCSharp.Avalonia;assembly=LibVLCSharp.Avalonia"
+	xmlns:controls="clr-namespace:VideoTagger.Desktop.Controls;assembly=VideoTagger.Desktop"
+	xmlns:converters="clr-namespace:VideoTagger.Desktop.Converters;assembly=VideoTagger.Desktop"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" d:DesignWidth="800"
+	 d:DesignHeight="450" x:DataType="vm:VideoPlayerViewModel" x:Class="VideoTagger.Desktop.Views.VideoPlayerView">
+	<Design.DataContext>
+		<!-- This only sets the DataContext for the previewer in an IDE,
+             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+		<vm:VideoPlayerViewModel/>
+	</Design.DataContext>
+
+	<Grid ColumnDefinitions="*" RowDefinitions="*,auto">
+			<controls:VideoView MediaPlayer="{Binding MediaPlayer}" Grid.Column="0" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+		<!-- Row 2 -->
+		<StackPanel Grid.Row="1" Grid.Column="0" HorizontalAlignment="Center" Orientation="Horizontal">
+			<Button Content="Prev" HorizontalAlignment="Center" Command="{Binding PrevVideoCommand}"/>
+			<Button Content="Play/Stop" HorizontalAlignment="Center" Command="{Binding PlayVideoCommand}"/>
+			<Button Content="Next" HorizontalAlignment="Center" Command="{Binding NextVideoCommand}"/>
+		</StackPanel>
+	</Grid>
+</UserControl>

@@ -8,6 +8,6 @@ namespace VideoTagger.Desktop.Models
 {
     public class FormConfigEventArgs : EventArgs
     {
-        public Dictionary<string,string> Fields { get; set; }
+        public IEnumerable<FormField> Fields { get; set; }
     }
 }

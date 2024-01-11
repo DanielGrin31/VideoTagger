@@ -13,6 +13,7 @@ namespace VideoTagger.Desktop.Services
 {
     public class VideoLoader : INotificationHandler<VideoDirectoryChangedMessage>
     {
+        public static string CurrentFolder = "";
         private readonly IVideoRepository videoRepository;
 
         public VideoLoader(IVideoRepository videoRepository)
@@ -23,6 +24,8 @@ namespace VideoTagger.Desktop.Services
         {
             List<string> videos = new List<string>();
             string dirPath = notification.NewVideoDirectory;
+            CurrentFolder = notification.NewVideoDirectory;
+            
             var files = Directory.GetFiles(dirPath);
             foreach (var filePath in files)
             {
@@ -33,7 +36,6 @@ namespace VideoTagger.Desktop.Services
             }
             videoRepository.SetVideosAsync(videos.ToArray());
             return Task.CompletedTask;
-
         }
 
 

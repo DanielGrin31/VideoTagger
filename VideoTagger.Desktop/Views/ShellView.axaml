@@ -9,12 +9,13 @@
              to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
         <vm:ShellViewModel/>
     </Design.DataContext>
-    <Grid ColumnDefinitions="20,auto,*,20" RowDefinitions="auto,auto,*,20">
-        <DockPanel Grid.Row="0" Grid.ColumnSpan="4">
+    <Grid ColumnDefinitions="20,auto,*,20" Background="#f8f9fa" RowDefinitions="auto,auto,*,20">
+        <DockPanel Grid.Row="0" Background="White"  Grid.ColumnSpan="4">
             <Menu DockPanel.Dock="Top">
                 <MenuItem Header="_File">
                     <MenuItem Header="_Open Video Folder" Command="{Binding OpenVideoFolderCommand}" />
                     <MenuItem Header="_Open Config File" />
+                    <MenuItem Header="_Go to main" Command="{Binding NavigateMainCommand}"/>
                     <Separator/>
                     <MenuItem Header="_Exit"/>
                 </MenuItem>
@@ -23,6 +24,7 @@
                     <MenuItem Header="Paste"/>
                 </MenuItem> -->
             </Menu>
+        <Rectangle HorizontalAlignment="Stretch"  Height="1"/>
         </DockPanel>
         <ContentControl Content="{Binding Content}" Grid.Row="1" Grid.RowSpan="2" Grid.Column="1" Grid.ColumnSpan="2" />
     </Grid>
