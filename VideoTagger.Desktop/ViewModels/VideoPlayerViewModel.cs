@@ -1,145 +1,167 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using DynamicData;
 using LibVLCSharp.Shared;
-using VideoTagger.Desktop.Models;
-using VideoTagger.Desktop.Services.Repositories;
 
-namespace VideoTagger.Desktop.ViewModels
+namespace VideoTagger.Desktop.ViewModels;
+public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
 {
-    public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
+    public VideoPlayerViewModel()
     {
+        _vlc = new LibVLC();
+        MediaPlayer = new MediaPlayer(_vlc);
+    }
+    
+    public MediaPlayer MediaPlayer { get; }
 
-        public VideoPlayerViewModel()
+    private int Index
+    {
+        get => _index;
+        set
         {
-            _vlc = new();
-            MediaPlayer = new MediaPlayer(_vlc);
+            SetProperty(ref _index, value);
+            OnPropertyChanged(nameof(CurrentVideo));
         }
-        public MediaPlayer MediaPlayer { get; }
-        private int index = 0;
-        private List<string> _videos = new List<string>();
-        public List<string> Videos
-        {
-            get { return _videos; }
-            set { _videos = value; index = 0; }
-        }
+    }
 
-        private LibVLC _vlc;
-        private bool hasVideo = false;
-        public string SelectIndex(int index)
+    public string CurrentVideo
+    {
+        get
         {
-            if (!ValidIndex(index))
+            if (Videos.Count > 0&&ValidIndex(Index))
             {
-                return "";
+                    return Videos[Index];
             }
-            this.index = index;
+
+            return "";
+        }
+    }
+
+    private List<string> _videos = new();
+    
+    public List<string> Videos
+    {
+        get => _videos;
+        set
+        {
+            SetProperty(ref _videos, value);
+            Index = 0;
+        }
+    }
+
+    private readonly LibVLC _vlc;
+    private bool _hasVideo;
+    private int _index;
+
+    public string SelectIndex(int index)
+    {
+        if (!ValidIndex(index)) return "";
+
+        Index = index;
+        PlayCurrentVideo();
+        return Videos[index];
+    }
+
+    public int SelectVideo(string videoName)
+    {
+        var videoIndex = Videos.IndexOf(videoName);
+        if (videoIndex >= 0)
+        {
+            Index = videoIndex;
             PlayCurrentVideo();
-            return Videos[index];
+            _hasVideo = true;
         }
-        public int SelectVideo(string videoName)
+        else
         {
-            var index = Videos.IndexOf(videoName);
-            if (index > 0)
+            if (File.Exists(videoName))
             {
-                this.index = index;
-                PlayCurrentVideo();
-                hasVideo = true;
-            }
-            else
-            {
-                if (File.Exists(videoName))
-                {
-                    using var media = new Media(_vlc, videoName);
-                    MediaPlayer.Play(media);
-                    hasVideo = true;
-                    this.index = -1;
-                }
-            }
-            return index;
-        }
-        [RelayCommand]
-        public void PlayVideo()
-        {
-            if (hasVideo)
-            {
-                MediaPlayer.Pause();
-            }
-            else
-            {
-                PlayCurrentVideo();
-                hasVideo = true;
+                using var media = new Media(_vlc, videoName);
+                MediaPlayer.Play(media);
+                _hasVideo = true;
+                Index = -1;
             }
         }
-        private bool ValidIndex(int index)
+
+        return videoIndex;
+    }
+
+    [RelayCommand]
+    private void PlayVideo()
+    {
+        if (_hasVideo)
         {
-            return index >= 0 && index < Videos.Count;
+            MediaPlayer.Pause();
         }
-        public string GetCurrentVideo()
+        else
         {
-            if (!ValidIndex(index))
-            {
-                if (MediaPlayer.Media?.Mrl is not null)
-                {
-                    var uri = new Uri(MediaPlayer.Media.Mrl);
-                    return uri.LocalPath;
-                }
-                return "";
-            }
-            return Videos[index];
-        }
-        [RelayCommand]
-        public void PrevVideo()
-        {
-            if (index > 0)
-            {
-                index--;
-            }
             PlayCurrentVideo();
-            hasVideo = true;
+            _hasVideo = true;
         }
+    }
 
-        [RelayCommand()]
-        public void NextVideo()
+    private bool ValidIndex(int index)
+    {
+        return index >= 0 && index < Videos.Count;
+    }
+
+    public string GetCurrentVideo()
+    {
+        if (!ValidIndex(Index))
         {
-
-            if (index < Videos.Count - 1)
+            if (MediaPlayer.Media?.Mrl is not null)
             {
-                index++;
+                var uri = new Uri(MediaPlayer.Media.Mrl);
+                return uri.LocalPath;
             }
-            PlayCurrentVideo();
-            hasVideo = true;
+
+            return "";
         }
 
-        public void PlayCurrentVideo()
-        {
-            if (Videos.Count == 0)
-            {
-                return;
-            }
-            index = Math.Clamp(index, 0, Videos.Count);
-            var video = Videos[index];
-            if (string.IsNullOrWhiteSpace(video))
-            {
-                return;
-            }
-            using var media = new Media(_vlc, video);
-            MediaPlayer.Play(media);
-        }
-        public void Dispose()
-        {
-            _vlc?.Dispose();
-            MediaPlayer?.Media?.Dispose();
-            MediaPlayer?.Dispose();
-        }
+        return Videos[Index];
+    }
 
-        internal void RemoveVideo(string filePath)
-        {
-            Videos.Remove(filePath);
-        }
+    [RelayCommand]
+    private void PrevVideo()
+    {
+        if (Index > 0) Index--;
+
+        PlayCurrentVideo();
+        _hasVideo = true;
+    }
+
+    [RelayCommand()]
+    private void NextVideo()
+    {
+        if (Index < Videos.Count - 1) Index++;
+
+        PlayCurrentVideo();
+        _hasVideo = true;
+    }
+
+    public void PlayCurrentVideo()
+    {
+        if (Videos.Count == 0) return;
+
+        Index = Math.Clamp(Index, 0, Videos.Count-1);
+        var video = Videos[Index];
+        if (string.IsNullOrWhiteSpace(video)) return;
+
+        using var media = new Media(_vlc, video);
+        MediaPlayer.Play(media);
+    }
+
+    public void Dispose()
+    {
+        _vlc.Dispose();
+        MediaPlayer.Media?.Dispose();
+        MediaPlayer.Dispose();
+    }
+
+    internal void RemoveVideo(string filePath)
+    {
+        Videos.Remove(filePath);
     }
 }

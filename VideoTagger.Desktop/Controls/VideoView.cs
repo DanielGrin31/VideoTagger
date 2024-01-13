@@ -14,10 +14,8 @@ using LibVLCSharp.Shared;
 using Avalonia.Layout;
 using System.Linq;
 using Avalonia.LogicalTree;
-using Avalonia.Markup.Xaml;
 using Avalonia.Input;
 using System.Diagnostics;
-using Avalonia.Media.Immutable;
 
 namespace VideoTagger.Desktop.Controls;
 
@@ -126,7 +124,7 @@ public class VideoView : NativeControlHost
 
             _disposables = new CompositeDisposable()
             {
-                _floatingContent.Bind(Window.ContentProperty, this.GetObservable(ContentProperty)),
+                _floatingContent.Bind(ContentControl.ContentProperty, this.GetObservable(ContentProperty)),
                 this.GetObservable(ContentProperty).Skip(1).Subscribe(_=> UpdateOverlayPosition()),
                 this.GetObservable(BoundsProperty).Skip(1).Subscribe(_ => UpdateOverlayPosition()),
                 Observable.FromEventPattern(VisualRoot!, nameof(Window.PositionChanged))

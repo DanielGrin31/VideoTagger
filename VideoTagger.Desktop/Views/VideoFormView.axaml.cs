@@ -3,6 +3,7 @@ using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using VideoTagger.Desktop.Models;
+using VideoTagger.Desktop.Models.EventArgs;
 using VideoTagger.Desktop.ViewModels;
 
 namespace VideoTagger.Desktop.Views

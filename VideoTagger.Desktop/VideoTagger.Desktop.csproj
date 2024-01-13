@@ -22,7 +22,7 @@
     <PackageReference Include="LibVLCSharp.Avalonia" Version="3.8.2"/>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0"/>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2"/>
-    <PackageReference Include="CommunityToolkit.Labs.Extensions.DependencyInjection" Version="0.1.231204-build.1603"/>
+    <PackageReference Include="CommunityToolkit.Labs.Extensions.DependencyInjection" Version="0.1.240109-build.1615" />
     <PackageReference Include="MediatR" Version="12.2.0"/>
   </ItemGroup>
 </Project>

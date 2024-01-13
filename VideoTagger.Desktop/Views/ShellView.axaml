@@ -17,7 +17,7 @@
                     <MenuItem Header="_Open Config File" />
                     <MenuItem Header="_Go to main" Command="{Binding NavigateMainCommand}"/>
                     <Separator/>
-                    <MenuItem Header="_Exit"/>
+                    <MenuItem Header="_Exit" Command="{Binding ExitCommand}"/>
                 </MenuItem>
                 <!-- <MenuItem Header="_Edit">
                     <MenuItem Header="Copy"/>

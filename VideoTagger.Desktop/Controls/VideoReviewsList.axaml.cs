@@ -1,30 +1,74 @@
-using System.Collections;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia;
+using Avalonia.Collections;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
-using Avalonia.Markup.Xaml;
+using Avalonia.Input;
 using VideoTagger.Desktop.Models;
+using VideoTagger.Desktop.Models.EventArgs;
 
 namespace VideoTagger.Desktop.Controls;
 
-public partial class VideoReviewsList : TemplatedControl
+public partial class VideoReviewsList : UserControl
 {
-    public static readonly DirectProperty<VideoReviewsList, List<VideoReviewItem>> VideosProperty =
-    AvaloniaProperty.RegisterDirect<VideoReviewsList, List<VideoReviewItem>>(
-        nameof(Items),
-        o => o.Items,
-        (o, v) => o.Items = v);
+    public event EventHandler<VideoSelectedEventArgs>? VideoSelected;
+    
+    
+    // ReSharper disable once MemberCanBePrivate.Global
+    public static readonly DirectProperty<VideoReviewsList, IEnumerable<VideoReviewItem>> VideosProperty =
+        AvaloniaProperty.RegisterDirect<VideoReviewsList, IEnumerable<VideoReviewItem>>(
+            nameof(Videos),
+            o => o.Videos,
+            (o, v) => o.Videos = v);
 
-    private List<VideoReviewItem> _items = new();
+    private IEnumerable<VideoReviewItem> _videos = new AvaloniaList<VideoReviewItem>();
 
-    public List<VideoReviewItem> Items
+    public IEnumerable<VideoReviewItem> Videos
     {
-        get { return _items; }
-        set { SetAndRaise(VideosProperty, ref _items, value); }
+        get => _videos;
+        set
+        {
+            SetAndRaise(VideosProperty, ref _videos, value);
+            VideosList.ItemsSource = Videos;
+        }
     }
+
+    
+    public static readonly DirectProperty<VideoReviewsList, string?> SelectedVideoProperty =
+        AvaloniaProperty.RegisterDirect<VideoReviewsList, string?>(
+            nameof(SelectedVideo),
+            o => o.SelectedVideo,
+            (o, v) => o.SelectedVideo = v);
+
+    private string? _selectedVideo ;
+
+    public string? SelectedVideo
+    {
+        get => _selectedVideo;
+        set
+        {
+            SetAndRaise(SelectedVideoProperty, ref _selectedVideo, value);
+            if (value is not null)
+            {
+                VideosList.SelectedItem = Videos.FirstOrDefault(x => x.VideoName == value);
+            }
+        }
+    }
+    protected override void OnInitialized()
+    {
+        VideosList.ItemsSource = Videos;
+        base.OnInitialized();
+    }
+
     public VideoReviewsList()
     {
         InitializeComponent();
+    }
+
+    private void VideosList_OnDoubleTapped(object? sender, TappedEventArgs e)
+    {
+        var item=((Control)e.Source!).DataContext as VideoReviewItem;
+        VideoSelected?.Invoke(sender,new VideoSelectedEventArgs(item!));
     }
 }

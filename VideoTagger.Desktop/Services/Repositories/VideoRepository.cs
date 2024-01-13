@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using VideoTagger.Desktop.Models;
+using VideoTagger.Desktop.Models.EventArgs;
 
 namespace VideoTagger.Desktop.Services.Repositories
 {
@@ -48,9 +51,19 @@ namespace VideoTagger.Desktop.Services.Repositories
 
         public void MarkHorror(string video)
         {
-            
+            using var writer = File.AppendText("horrors.txt");
+            writer.WriteLine(video+Environment.NewLine);
         }
 
+        public string[] GetHorrors()
+        {
+            if (File.Exists("horrors.txt"))
+            {
+                return File.ReadAllLines("horrors.txt");
+            }
+
+            return Array.Empty<string>();
+        }
         public Task<int> MoveNextVideo()
         {
             if (currentIndex < videos.Length - 1)

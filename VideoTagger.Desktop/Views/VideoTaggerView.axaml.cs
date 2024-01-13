@@ -21,5 +21,6 @@ namespace VideoTagger.Desktop.Views
             base.OnLoaded(e);
         }
 
+   
     }
 }

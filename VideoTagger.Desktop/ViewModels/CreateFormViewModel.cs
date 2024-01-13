@@ -15,16 +15,18 @@ namespace VideoTagger.Desktop.ViewModels
     {
         [ObservableProperty]
         private string formName = "";
-        private IFormManager _forms;
-
+        private IFormManager _formManager;
+        [ObservableProperty]
+        private string[] _forms;
         public ObservableCollection<FormField> FieldsList { get; set; }
         public CreateFormViewModel(IFormManager formManager)
         {
-            _forms = formManager;
+            _formManager = formManager;
             FieldsList = new ObservableCollection<FormField>(new List<FormField>()
             {
                 new FormField("",FormFieldType.TextBox)
             });
+            _forms = _formManager.GetFormNames();
         }
 
         [RelayCommand]
@@ -44,8 +46,8 @@ namespace VideoTagger.Desktop.ViewModels
         {
             var filename = FormName.Replace(' ', '_') + ".txt";
             var formConfig = new FormConfig(FormName, FieldsList);
-            _forms.AddForm(formConfig);
-            _forms.SetDefaultForm(FormName);
+            _formManager.AddForm(formConfig);
+            _formManager.SetDefaultForm(FormName);
             return Task.CompletedTask;
         }
     }

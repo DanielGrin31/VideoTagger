@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
-namespace VideoTagger.Desktop.Models
+namespace VideoTagger.Desktop.Models.EventArgs
 {
-    public class FormConfigEventArgs : EventArgs
+    public class FormConfigEventArgs(IEnumerable<FormField> fields) : System.EventArgs
     {
-        public IEnumerable<FormField> Fields { get; set; }
+        public IEnumerable<FormField> Fields { get; set; } = fields;
     }
 }

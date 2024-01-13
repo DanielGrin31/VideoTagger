@@ -1,49 +1,59 @@
 <UserControl xmlns="https://github.com/avaloniaui"
-	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-	xmlns:vm="using:VideoTagger.Desktop.ViewModels"
-	xmlns:views="using:VideoTagger.Desktop.Views"
-	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-	xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
-	xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
-	xmlns:vlc="clr-namespace:LibVLCSharp.Avalonia;assembly=LibVLCSharp.Avalonia"
-	xmlns:controls="clr-namespace:VideoTagger.Desktop.Controls;assembly=VideoTagger.Desktop"
-	xmlns:converters="clr-namespace:VideoTagger.Desktop.Converters;assembly=VideoTagger.Desktop"
-	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" d:DesignWidth="800"
-	 d:DesignHeight="450" x:DataType="vm:VideoTaggerViewModel" x:Class="VideoTagger.Desktop.Views.VideoTaggerView"
-	   x:CompileBindings="False"
-	   >
-	<Design.DataContext>
-		<!-- This only sets the DataContext for the previewer in an IDE,
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:VideoTagger.Desktop.ViewModels"
+             xmlns:views="using:VideoTagger.Desktop.Views"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
+             xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
+             xmlns:controls="clr-namespace:VideoTagger.Desktop.Controls;assembly=VideoTagger.Desktop"
+             xmlns:converters="clr-namespace:VideoTagger.Desktop.Converters;assembly=VideoTagger.Desktop"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d"
+             d:DesignWidth="800"
+             d:DesignHeight="450" x:DataType="vm:VideoTaggerViewModel"
+             x:Class="VideoTagger.Desktop.Views.VideoTaggerView"
+             x:CompileBindings="False">
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
              to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-		<vm:VideoTaggerViewModel/>
-	</Design.DataContext>
-	  <UserControl.Resources>
-    <converters:VideoStatusToColorConverter x:Key="VideoStatusToColor" />
-  </UserControl.Resources>
+        <vm:VideoTaggerViewModel />
+    </Design.DataContext>
+    <UserControl.Resources>
+        <converters:VideoStatusToColorConverter x:Key="VideoStatusToColor" />
+    </UserControl.Resources>
 
-	<Grid ColumnDefinitions="auto,*,auto" RowDefinitions="auto,*,auto,auto">
-		<!-- Row 1 -->
-        <ContentControl  x:Name="myVideoForm" Content="{Binding VideoForm}" Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" >
-			
-		</ContentControl>
-        <ContentControl Content="{Binding VideoPlayer}" Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" >
+    <Grid ColumnDefinitions="auto,*,auto" RowDefinitions="auto,*,auto,auto">
 
-		</ContentControl>
-		<Button Grid.Row="2" HorizontalAlignment="Center" 
-		FontSize="24" HorizontalContentAlignment="Center" Background="IndianRed" Margin="10" Padding="10"
-		 Grid.Column="1" 
-		 Command="{Binding HorrorVideoCommand}"
-		 Content="Horror!!!"
-		 />
-			<ComboBox Margin="20" x:Name="FormSelector" Grid.Row="0" Grid.Column="2" ItemsSource="{Binding FormNames}" SelectedItem="{Binding SelectedFormName}" 
-			  MaxDropDownHeight="100">
-				<i:Interaction.Behaviors>
-					<ia:EventTriggerBehavior EventName="SelectionChanged" SourceObject="FormSelector">
-					<ia:InvokeCommandAction Command="{Binding FormSelectionChangedCommand}"
-					CommandParameter="{Binding #FormSelector.SelectedItem}" />
-					</ia:EventTriggerBehavior>
-				</i:Interaction.Behaviors>
-			</ComboBox>
-			<controls:VideoReviewsList Videos="{Binding VideoReviews}"></controls:VideoReviewsList>
-	</Grid>
+        <views:VideoFormView DataContext="{Binding VideoForm}" Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" />
+
+        <views:VideoPlayerView
+            CurrentVideo="{Binding DataContext.CurrentVideo,
+		RelativeSource={RelativeSource AncestorType=UserControl},Mode=OneWayToSource}"
+            DataContext="{Binding VideoPlayer}" Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" />
+        <Button Grid.Row="2" HorizontalAlignment="Center"
+                FontSize="24" HorizontalContentAlignment="Center" Background="IndianRed" Margin="10" Padding="10"
+                Grid.Column="1"
+                Command="{Binding HorrorVideoCommand}"
+                Content="Horror!!!" />
+        <ComboBox Margin="20" x:Name="FormSelector" Grid.Row="0" Grid.Column="2" ItemsSource="{Binding FormNames}"
+                  SelectedItem="{Binding SelectedFormName}"
+                  MaxDropDownHeight="100">
+            <i:Interaction.Behaviors>
+                <ia:EventTriggerBehavior EventName="SelectionChanged" SourceObject="FormSelector">
+                    <ia:InvokeCommandAction Command="{Binding FormSelectionChangedCommand}"
+                                            CommandParameter="{Binding #FormSelector.SelectedItem}" />
+                </ia:EventTriggerBehavior>
+            </i:Interaction.Behaviors>
+        </ComboBox>
+        <controls:VideoReviewsList
+            SelectedVideo="{Binding CurrentVideo}"
+            x:Name="VideoReviewsList1" Grid.Row="1" Grid.Column="2"
+            Videos="{Binding VideoReviews}">
+            <i:Interaction.Behaviors>
+                <ia:EventTriggerBehavior EventName="VideoSelected">
+                    <ia:InvokeCommandAction Command="{Binding VideoSelectedCommand}"
+                                            PassEventArgsToCommand="True" />
+                </ia:EventTriggerBehavior>
+            </i:Interaction.Behaviors>
+        </controls:VideoReviewsList>
+    </Grid>
 </UserControl>

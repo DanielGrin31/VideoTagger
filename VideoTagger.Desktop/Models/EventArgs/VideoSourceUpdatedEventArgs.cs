@@ -1,17 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace VideoTagger.Desktop.Models
+namespace VideoTagger.Desktop.Models.EventArgs
 {
-    public class VideoSourceUpdatedEventArgs:EventArgs
+    public class VideoSourceUpdatedEventArgs(string[] videos) : System.EventArgs
     {
-        public string[] Videos { get; }
-        public VideoSourceUpdatedEventArgs(string[] videos)
-        {
-            this.Videos = videos;
-            
-        }
+        public string[] Videos { get; } = videos;
     }
 }

@@ -1,20 +1,9 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Avalonia.Interactivity;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace VideoTagger.Desktop.Models
+namespace VideoTagger.Desktop.Models.EventArgs
 {
-    public class FormSubmittedEventArgs:EventArgs
+    public class FormSubmittedEventArgs(Dictionary<string, string> fields) : System.EventArgs
     {
-        public Dictionary<string,string> Fields;
-
-        public FormSubmittedEventArgs(Dictionary<string,string> fields)
-        {
-            Fields=fields;
-        }
-
+        public readonly Dictionary<string,string> Fields = fields;
     }
 }

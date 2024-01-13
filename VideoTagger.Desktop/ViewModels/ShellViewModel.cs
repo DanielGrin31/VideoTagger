@@ -63,4 +63,10 @@ public partial class ShellViewModel : ViewModelBase
         videoDirectory = folder.Path.AbsolutePath;
         await mediator.Publish(message);
     }
+
+    [RelayCommand]
+    private void Exit()
+    {
+        Environment.Exit(0);
+    }
 }

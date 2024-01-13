@@ -1,24 +1,25 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-            xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
-            xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:models="clr-namespace:VideoTagger.Desktop.Models"
+             xmlns:converters="clr-namespace:VideoTagger.Desktop.Converters"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="VideoTagger.Desktop.Controls.VideoReviewsList">
-  <ListBox x:Name="VideosList" ItemsSource="{Binding Items}">
-			<ListBox.ItemTemplate>
-				<DataTemplate>
-					<StackPanel Background="{Binding Status,Converter={StaticResource VideoStatusToColor}}">
-					<TextBox IsReadOnly="True" MaxWidth="300" Text="{Binding VideoName}"/>
-					</StackPanel>
-				</DataTemplate>
-			</ListBox.ItemTemplate>	
-			<i:Interaction.Behaviors>
-				<ia:EventTriggerBehavior EventName="DoubleTapped" SourceObject="VideosList">
-					<ia:InvokeCommandAction Command="{Binding VideoSelectedCommand}"
-					PassEventArgsToCommand="True"/>
-					</ia:EventTriggerBehavior>
-			</i:Interaction.Behaviors>
-		</ListBox>
+    <UserControl.Resources>
+        <converters:VideoStatusToColorConverter 
+           x:Key="VideoStatusToColor" ></converters:VideoStatusToColorConverter>
+    </UserControl.Resources>
+    <ListBox x:Name="VideosList" DoubleTapped="VideosList_OnDoubleTapped">
+        <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="models:VideoReviewItem">
+                <StackPanel Background="{Binding Status
+                ,Converter={StaticResource VideoStatusToColor}}">
+                    <TextBox IsReadOnly="True" MaxWidth="300" 
+                             Text="{Binding VideoName}"/>
+                </StackPanel>
+            </DataTemplate>
+        </ListBox.ItemTemplate>
+					
+    </ListBox>
 </UserControl>

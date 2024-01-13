@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using VideoTagger.Desktop.Models;
+using VideoTagger.Desktop.Models.EventArgs;
 
 namespace VideoTagger.Desktop.Services.Repositories
 {
@@ -14,5 +15,6 @@ namespace VideoTagger.Desktop.Services.Repositories
         Task SetVideosAsync(string[] videos);
         Task<int> GetCount();
         void MarkHorror(string video);
+        string[] GetHorrors();
     }
 }
