@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:VideoTagger.Desktop.ViewModels"
              xmlns:views="using:VideoTagger.Desktop.Views"
+             xmlns:models="using:VideoTagger.Desktop.Models"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
              xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
@@ -13,27 +14,41 @@
              x:Class="VideoTagger.Desktop.Views.VideoTaggerView"
              x:CompileBindings="False">
     <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-        <vm:VideoTaggerViewModel />
+        <vm:VideoTaggerViewModel></vm:VideoTaggerViewModel>
     </Design.DataContext>
-    <UserControl.Resources>
-        <converters:VideoStatusToColorConverter x:Key="VideoStatusToColor" />
-    </UserControl.Resources>
 
-    <Grid ColumnDefinitions="auto,*,auto" RowDefinitions="auto,*,auto,auto">
+    <UserControl.Resources>
+        <converters:AddIntConverter x:Key="AddInt" />
+    </UserControl.Resources>
+    <UserControl.Styles>
+        <Style Selector="Label.h1">
+            <Setter Property="FontSize" Value="24" />
+            <Setter Property="FontWeight" Value="Black" />
+            <Setter Property="FontFamily" Value="{StaticResource RobotoFont}" />
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="Padding" Value="0" />
+        </Style>
+    </UserControl.Styles>
+    <Grid ColumnDefinitions="auto,*,auto,Auto" RowDefinitions="auto,*,auto,auto">
 
         <views:VideoFormView DataContext="{Binding VideoForm}" Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" />
 
+        <Label Grid.Column="1" Classes="h1" Grid.Row="0"
+               Content="{Binding CurrentVideo,StringFormat='Currently Playing:{0}'}" />
+        <!-- Video Player -->
         <views:VideoPlayerView
-            CurrentVideo="{Binding DataContext.CurrentVideo,
-		RelativeSource={RelativeSource AncestorType=UserControl},Mode=OneWayToSource}"
-            DataContext="{Binding VideoPlayer}" Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" />
+            CurrentVideo="{Binding DataContext.CurrentVideo,RelativeSource={RelativeSource AncestorType=UserControl},Mode=OneWayToSource}"
+            DataContext="{Binding VideoPlayer}" Grid.Row="1" Grid.Column="1" />
+
+        <!-- Horror Button -->
         <Button Grid.Row="2" HorizontalAlignment="Center"
                 FontSize="24" HorizontalContentAlignment="Center" Background="IndianRed" Margin="10" Padding="10"
                 Grid.Column="1"
                 Command="{Binding HorrorVideoCommand}"
                 Content="Horror!!!" />
+
+
+        <!-- Form Selector -->
         <ComboBox Margin="20" x:Name="FormSelector" Grid.Row="0" Grid.Column="2" ItemsSource="{Binding FormNames}"
                   SelectedItem="{Binding SelectedFormName}"
                   MaxDropDownHeight="100">
@@ -44,9 +59,21 @@
                 </ia:EventTriggerBehavior>
             </i:Interaction.Behaviors>
         </ComboBox>
+
+        <!-- Video Counter -->
+        <StackPanel IsVisible="{Binding !!VideoReviews.Count}" Grid.Row="0" Grid.Column="3" VerticalAlignment="Center"
+                    Orientation="Horizontal" Spacing="0">
+            <Label Classes="h1"
+                   Content="{Binding  CurrentIndex
+                   ,Converter={StaticResource AddInt},ConverterParameter='1'}"
+                   Margin="0" Padding="0" />
+            <Label Classes="h1" Content="{Binding  VideoReviews.Count,StringFormat='/{0}'}" />
+        </StackPanel>
+
+
         <controls:VideoReviewsList
-            SelectedVideo="{Binding CurrentVideo}"
-            x:Name="VideoReviewsList1" Grid.Row="1" Grid.Column="2"
+            SelectedVideo="{Binding CurrentVideo,Mode=OneWay}"
+            x:Name="VideoReviewsList1" Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2"
             Videos="{Binding VideoReviews}">
             <i:Interaction.Behaviors>
                 <ia:EventTriggerBehavior EventName="VideoSelected">

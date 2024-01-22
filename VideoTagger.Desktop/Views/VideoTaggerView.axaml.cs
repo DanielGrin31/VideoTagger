@@ -17,7 +17,7 @@ namespace VideoTagger.Desktop.Views
         protected override void OnLoaded(RoutedEventArgs e)
         {
             VideoTaggerViewModel? vm = (VideoTaggerViewModel?)DataContext;
-            vm.SetFormToDefault();
+            vm?.SetFormToDefault();
             base.OnLoaded(e);
         }
 

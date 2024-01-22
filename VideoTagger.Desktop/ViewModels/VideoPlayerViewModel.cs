@@ -27,18 +27,28 @@ public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
         }
     }
 
+    private string _currentVideo;
+
     public string CurrentVideo
     {
-        get
+        get { return _currentVideo; }
+        set
         {
-            if (Videos.Count > 0&&ValidIndex(Index))
-            {
-                    return Videos[Index];
-            }
-
-            return "";
+            _currentVideo = value; 
+            OnPropertyChanged(nameof(CurrentVideo));
         }
     }
+    // public string CurrentVideo
+    // {
+    //     get
+    //     {
+    //         if (Videos.Count > 0&&ValidIndex(Index))
+    //         {
+    //                 return Videos[Index];
+    //         }
+    //         return "";
+    //     }
+    // }
 
     private List<string> _videos = new();
     
@@ -49,6 +59,7 @@ public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
         {
             SetProperty(ref _videos, value);
             Index = 0;
+            _hasVideo = false;
         }
     }
 
@@ -71,8 +82,7 @@ public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
         if (videoIndex >= 0)
         {
             Index = videoIndex;
-            PlayCurrentVideo();
-            _hasVideo = true;
+            _hasVideo=PlayCurrentVideo();
         }
         else
         {
@@ -81,24 +91,51 @@ public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
                 using var media = new Media(_vlc, videoName);
                 MediaPlayer.Play(media);
                 _hasVideo = true;
+                CurrentVideo = videoName;
                 Index = -1;
             }
         }
 
         return videoIndex;
     }
+    [RelayCommand]
+    private void MoveMedia(int diff)
+    {
+        if (!_hasVideo)
+        {
+            return;
+        }
+        var time=MediaPlayer.Time + diff*1000;
+        time=long.Clamp(time, 0, MediaPlayer.Media!.Duration-100);
+        if (MediaPlayer.State == VLCState.Ended&&diff<0)
+        {
+            MediaPlayer.Stop();
+            MediaPlayer.Play();
+        }
+        MediaPlayer.SeekTo(TimeSpan.FromMilliseconds(time));
 
+    }
     [RelayCommand]
     private void PlayVideo()
     {
         if (_hasVideo)
         {
-            MediaPlayer.Pause();
+            switch (MediaPlayer.Media.State)
+            {
+                case VLCState.Ended:
+                case VLCState.Error:
+                    MediaPlayer.Stop();
+                    MediaPlayer.Play();
+                    break;
+                default:
+                    MediaPlayer.Pause();
+                    break;                
+            }
         }
         else
         {
-            PlayCurrentVideo();
-            _hasVideo = true;
+            _hasVideo=PlayCurrentVideo();
+
         }
     }
 
@@ -122,14 +159,18 @@ public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
 
         return Videos[Index];
     }
-
+    [RelayCommand]
+    private void ToggleMute()
+    {
+        MediaPlayer.ToggleMute();
+    }
     [RelayCommand]
     private void PrevVideo()
     {
         if (Index > 0) Index--;
 
-        PlayCurrentVideo();
-        _hasVideo = true;
+        _hasVideo=PlayCurrentVideo();
+
     }
 
     [RelayCommand()]
@@ -137,20 +178,20 @@ public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
     {
         if (Index < Videos.Count - 1) Index++;
 
-        PlayCurrentVideo();
-        _hasVideo = true;
+        _hasVideo=PlayCurrentVideo();
+
     }
 
-    public void PlayCurrentVideo()
+    public bool PlayCurrentVideo()
     {
-        if (Videos.Count == 0) return;
-
+        if (Videos.Count == 0) return false;
+        
         Index = Math.Clamp(Index, 0, Videos.Count-1);
         var video = Videos[Index];
-        if (string.IsNullOrWhiteSpace(video)) return;
-
+        if (string.IsNullOrWhiteSpace(video)) return false;
+        CurrentVideo = video;
         using var media = new Media(_vlc, video);
-        MediaPlayer.Play(media);
+        return MediaPlayer.Play(media);
     }
 
     public void Dispose()

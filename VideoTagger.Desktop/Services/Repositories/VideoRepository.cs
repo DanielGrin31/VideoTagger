@@ -52,7 +52,7 @@ namespace VideoTagger.Desktop.Services.Repositories
         public void MarkHorror(string video)
         {
             using var writer = File.AppendText("horrors.txt");
-            writer.WriteLine(video+Environment.NewLine);
+            writer.WriteLine(video);
         }
 
         public string[] GetHorrors()

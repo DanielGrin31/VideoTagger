@@ -18,25 +18,33 @@ namespace VideoTagger.Desktop.ViewModels
         private readonly IVideoRepository _videoRepository;
         [ObservableProperty] private string[] _formNames;
         [ObservableProperty] private string _selectedFormName = "default";
-        [ObservableProperty] private string _currentVideo;
         [ObservableProperty] ViewModelBase _videoForm;
-        [ObservableProperty] ViewModelBase _videoPlayer;
+        [ObservableProperty] private ViewModelBase _videoPlayer;
+        [ObservableProperty] ObservableCollection<VideoReviewItem> _videoReviews = [];
+        [ObservableProperty] private int _currentIndex = 0;
+        private string _currentVideo = "";
 
-        [ObservableProperty]
-        ObservableCollection<VideoReviewItem> _videoReviews = new ObservableCollection<VideoReviewItem>();
+        public string CurrentVideo
+        {
+            get { return _currentVideo; }
+            set
+            {
+                SetProperty(ref _currentVideo, value);
+                CurrentIndex = VideoReviews.ToList().FindIndex(x => x.VideoName == CurrentVideo);
+            }
+        }
 
         public VideoTaggerViewModel(
             IFormManager formManager, IVideoRepository videoRepository)
         {
             var player = this.Build<VideoPlayerViewModel>();
-
             var form = this.Build<VideoFormViewModel>();
             form.FormSubmitted += SubmitForm;
             VideoPlayer = player;
             VideoForm = form;
             _forms = formManager;
-            this._videoRepository = videoRepository;
-            this._videoRepository.SourceUpdated += VideoSourceUpdated;
+            _videoRepository = videoRepository;
+            _videoRepository.SourceUpdated += VideoSourceUpdated;
             FormNames = _forms.GetFormNames();
         }
 
@@ -55,11 +63,10 @@ namespace VideoTagger.Desktop.ViewModels
             List<VideoReviewItem> reviews = new List<VideoReviewItem>();
             foreach (var video in videos)
             {
-                
                 string relativePath = Path.GetRelativePath(VideoLoader.CurrentFolder, video);
                 if (horrors.Contains(video))
                 {
-                    reviews.Add(new VideoReviewItem(video,ReviewStatus.Horror));
+                    reviews.Add(new VideoReviewItem(video, ReviewStatus.Horror));
                 }
                 else if (existing.ContainsKey(relativePath))
                 {
@@ -108,6 +115,11 @@ namespace VideoTagger.Desktop.ViewModels
         {
             var player = (VideoPlayer as VideoPlayerViewModel)!;
             string video = player.GetCurrentVideo();
+            if (string.IsNullOrEmpty(video))
+            {
+                return;
+            }
+
             var horror = VideoReviews.First(x => x.VideoName == video);
             horror.Status = ReviewStatus.Horror;
             VideoReviews = new(VideoReviews.OrderBy(x => x.Status).ToList());
@@ -120,15 +132,19 @@ namespace VideoTagger.Desktop.ViewModels
         public async Task FormSelectionChanged(string formName)
         {
             var config = _forms.GetConfig(formName);
-            ((VideoFormViewModel)VideoForm).SelectedForm = config;
+
             var videos = await _videoRepository.GetAllVideosAsync();
+            ((VideoFormViewModel)VideoForm).SelectedForm = config;
             await GenerateReviews(videos);
+            ((VideoPlayerViewModel)VideoPlayer).Videos = VideoReviews.Where(x => x.Status == ReviewStatus.NotSeen)
+                .Select(x => x.VideoName).ToList();
+
         }
 
         public void SetFormToDefault()
         {
             var formConfig = _forms.GetDefaultForm();
-            SelectedFormName = formConfig.FormName;
+            SelectedFormName = formConfig!.FormName;
 
             ((VideoFormViewModel)VideoForm).SelectedForm = formConfig;
         }

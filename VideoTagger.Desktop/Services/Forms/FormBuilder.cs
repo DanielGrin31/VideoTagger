@@ -33,6 +33,7 @@ namespace VideoTagger.Desktop.Services
                 }
                 if (control is not null)
                 {
+                    control.Margin = new(10);
                     controls.Add(control);
                 }
             }
@@ -86,6 +87,7 @@ namespace VideoTagger.Desktop.Services
             textBlock.Margin = new Thickness(0, 0, 5, 0);
             var textBox = new TextBox();
             textBox.Name = field.Name;
+            textBox.MaxWidth = 150;
             stack.Children.Add(textBlock);
             stack.Children.Add(textBox);
             return stack;

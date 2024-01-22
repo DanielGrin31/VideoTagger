@@ -5,90 +5,133 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using VideoTagger.Desktop.Models;
+using static VideoTagger.Desktop.Utilities.FormManagerUtilities;
 
 namespace VideoTagger.Desktop.Services.Forms
 {
     public class FileFormManager : IFormManager
     {
-        const string FormConfigPath = "FormsConfig.txt";
-        private readonly GlobalFormConfig config;
-        private IFormExporter _Exporter;
+        private const string FormConfigPath = "FormsConfig.txt";
+        private GlobalFormConfig _config;
+        private readonly IFormExporter _exporter;
 
         public FileFormManager(IFormExporter exporter)
         {
-            config = GetGlobalConfig();
-            _Exporter=exporter;
+            _config = GetGlobalConfig();
+            _exporter = exporter;
         }
 
         public bool AddForm(FormConfig form)
         {
-            config.Forms[form.FormName] = form;
+            _config.Forms[form.FormName] = form;
+            var serialized = JsonSerializer.Serialize(_config);
+            File.WriteAllText(FormConfigPath, serialized);
             return true;
         }
 
         public Task ExportAsync(Dictionary<string, string> Fields, string videoName, string formName)
         {
-            return _Exporter.ExportAsync(Fields,videoName,formName);
+            return _exporter.ExportAsync(Fields, videoName, formName);
         }
 
         public FormConfig? GetConfig(string formName)
         {
-            if (!string.IsNullOrEmpty(formName) && config.Forms.ContainsKey(formName))
+            if (!string.IsNullOrEmpty(formName) && _config.Forms.ContainsKey(formName))
             {
-                return config.Forms[formName];
+                return _config.Forms[formName].Clone();
             }
+
             return null;
+        }
+
+        public void SetGlobalConfig(GlobalFormConfig config)
+        {
+            _exporter.BackupAllAsync();
+            _config = config;
+            var serialized = JsonSerializer.Serialize(config);
+            File.WriteAllText(FormConfigPath, serialized);
         }
 
         public FormConfig? GetDefaultForm()
         {
-            var defaultFormName = config.DefaultFormName;
-            if (!string.IsNullOrEmpty(defaultFormName))
+            var defaultFormName = _config.DefaultFormName;
+            if (!string.IsNullOrEmpty(defaultFormName) && _config.Forms.ContainsKey(defaultFormName))
             {
-                return config.Forms[defaultFormName];
+                return _config.Forms[defaultFormName].Clone();
             }
-            return null;
+
+            return _config.Forms["default"].Clone();
         }
 
         public string[] GetFormNames()
         {
-            return config.Forms.Select(x=>x.Key).ToArray();
+            return _config.Forms.Select(x => x.Key).ToArray();
         }
 
         public GlobalFormConfig GetGlobalConfig()
         {
             if (!File.Exists(FormConfigPath))
             {
-                File.Create(FormConfigPath);
+                File.Create(FormConfigPath).Close();
             }
-            var globalConfigStr = File.ReadAllText(FormConfigPath);
-            if (string.IsNullOrEmpty(globalConfigStr))
-            {
-                var defaultConfig = new FormConfig("default", []);
-                var global = new GlobalFormConfig(defaultConfig.FormName,
-                new Dictionary<string, FormConfig>() { { defaultConfig.FormName, defaultConfig } });
-                return global;
-            }
-            var globalConfig = JsonSerializer.Deserialize<GlobalFormConfig>(globalConfigStr);
+
+            TryParseGlobalFormConfig(FormConfigPath, out GlobalFormConfig? globalConfig);
             return globalConfig!;
         }
 
         public Task<Dictionary<string, Dictionary<string, string>>> ParseAsync(string formName)
         {
-            return _Exporter.ParseAsync(formName);
+            return _exporter.ParseAsync(formName);
+        }
+
+        public void EditForm(string existing, FormConfig newConfig)
+        {
+            var fieldsChanged = !newConfig.Fields.SequenceEqual(_config.Forms[existing].Fields);
+            if (existing == newConfig.FormName)
+            {
+                // Same Name but fields may have changed
+                _config.Forms[existing] = newConfig.Clone();
+            }
+            else
+            {
+                // Name Changed
+                _config.Forms.Remove(existing);
+                _config.Forms[newConfig.FormName] = newConfig;
+                if (_config.DefaultFormName == existing)
+                {
+                    _config.DefaultFormName = newConfig.FormName;
+                }
+            }
+
+            var serialized = JsonSerializer.Serialize(_config);
+            File.WriteAllText(FormConfigPath, serialized);
+            _exporter.CreateNewVersion(existing, newConfig, fieldsChanged);
+        }
+
+        public FormConfig? RemoveForm(string formName)
+        {
+            if (!_config.Forms.ContainsKey(formName))
+            {
+                return null;
+            }
+
+            var form = _config.Forms[formName];
+            _config.Forms.Remove(formName);
+            var serialized = JsonSerializer.Serialize(_config);
+            File.WriteAllText(FormConfigPath, serialized);
+            return form;
         }
 
         public FormConfig? SetDefaultForm(string formName)
         {
-            if (config.Forms.ContainsKey(formName))
+            if (_config.Forms.ContainsKey(formName))
             {
-                config.DefaultFormName = formName;
-                var serialized = JsonSerializer.Serialize(config);
+                _config.DefaultFormName = formName;
+                var serialized = JsonSerializer.Serialize(_config);
                 File.WriteAllText(FormConfigPath, serialized);
             }
+
             return null;
         }
-
- 
     }
 }

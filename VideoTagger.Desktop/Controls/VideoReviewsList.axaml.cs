@@ -14,6 +14,8 @@ public partial class VideoReviewsList : UserControl
 {
     public event EventHandler<VideoSelectedEventArgs>? VideoSelected;
     
+
+    
     
     // ReSharper disable once MemberCanBePrivate.Global
     public static readonly DirectProperty<VideoReviewsList, IEnumerable<VideoReviewItem>> VideosProperty =
@@ -49,7 +51,7 @@ public partial class VideoReviewsList : UserControl
         set
         {
             SetAndRaise(SelectedVideoProperty, ref _selectedVideo, value);
-            if (value is not null)
+            if (!string.IsNullOrEmpty(value))
             {
                 VideosList.SelectedItem = Videos.FirstOrDefault(x => x.VideoName == value);
             }

@@ -20,6 +20,8 @@ public partial class ShellViewModel : ViewModelBase
     [ObservableProperty]
     private ViewModelBase _content;
     private readonly IMediator mediator;
+
+  
     public ShellViewModel(MainViewModel mainViewModel, IMediator mediator)
     {
         this.mediator = mediator;
@@ -32,14 +34,39 @@ public partial class ShellViewModel : ViewModelBase
         Content = vm;
         postNavigationAction?.Invoke(vm);
     }
-
     [RelayCommand]
-    public void NavigateMain()
+    private async Task OpenFormConfig()
+    {
+        var desktop = App.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime;
+        var topLevel = TopLevel.GetTopLevel(desktop.MainWindow);
+        // Start async operation to open the dialog.
+        var fileDialogResult = await topLevel.StorageProvider
+            .OpenFilePickerAsync(new FilePickerOpenOptions()
+            {
+                Title = "Select Form Config",
+                AllowMultiple = false,
+                FileTypeFilter = new []{FilePickerFileTypes.TextPlain}
+            });
+        var file = fileDialogResult.FirstOrDefault();
+        if (file is null)
+        {
+            return;
+        }
+
+        string filePath=file.Path.AbsolutePath;
+        FormConfigChangedMessage message = new FormConfigChangedMessage()
+        {
+            ConfigFilePath = filePath,
+        };
+        await mediator.Publish(message);
+    }
+    [RelayCommand]
+    private void NavigateMain()
     {
         NavigateTo<MainViewModel>();
     }
     [RelayCommand]
-    public async Task OpenVideoFolder()
+    private async Task OpenVideoFolder()
     {
         var desktop = App.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime;
         var topLevel = TopLevel.GetTopLevel(desktop.MainWindow);

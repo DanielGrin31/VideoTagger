@@ -34,5 +34,14 @@ namespace VideoTagger.Desktop.Models
             FieldType = fieldType;
         }
 
+        public override bool Equals(object? obj)
+        {
+            if (obj is FormField other)
+            {
+                return Name == other.Name&&FieldType==other.FieldType;
+            }
+            return false;
+        }
+
     }
 }

@@ -4,23 +4,28 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using VideoTagger.Desktop.Models;
+using VideoTagger.Desktop.Services.Forms;
+using VideoTagger.Desktop.Utilities;
 
 namespace VideoTagger.Desktop.Services
 {
-    public class JsonFormExporter : IFormExporter
+    public class JsonFormExporter : BaseFormExporter
     {
-        public async Task ExportAsync(Dictionary<string, string> Fields, string videoName, string formName)
+        public override string Extension { get; } = ".txt";
+        public override async Task ExportAsync(Dictionary<string, string> fields, string videoName, string formName)
         {
-            string fileName = $"{formName.Replace(' ', '_')}.txt";
+            string fileName = $"{formName.Replace(' ', '_')}"+Extension;
             var deserialized=await ParseAsync(formName);
-            deserialized[videoName] = Fields;
+            deserialized[videoName] = fields;
             string jsonString = JsonSerializer.Serialize(deserialized);
             File.WriteAllText(fileName, jsonString);
         }
 
-        public Task<Dictionary<string, Dictionary<string, string>>> ParseAsync(string formName)
+        public override Task<Dictionary<string, Dictionary<string, string>>> ParseAsync(string formName)
         {
-            string fileName = $"{formName.Replace(' ', '_')}.txt";
+            Directory.CreateDirectory("Forms");
+            string fileName = $"{formName.Replace(' ', '_')}"+Extension;
             using FileStream fileStream = new FileStream(fileName, FileMode.OpenOrCreate);
             string json = File.ReadAllText(fileName);
             Dictionary<string, Dictionary<string, string>>? deserialized;

@@ -1,48 +1,102 @@
 <UserControl
-	xmlns="https://github.com/avaloniaui"
-	xmlns:vm="using:VideoTagger.Desktop.ViewModels"
-	xmlns:models="using:VideoTagger.Desktop.Models"
-	xmlns:vlc="clr-namespace:LibVLCSharp.Avalonia;assembly=LibVLCSharp.Avalonia"
-	xmlns:converters="clr-namespace:VideoTagger.Desktop.Converters;assembly=VideoTagger.Desktop"
-	xmlns:controls="clr-namespace:VideoTagger.Desktop.Controls;assembly=VideoTagger.Desktop"
-	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-  x:CompileBindings="False"
-            mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-            x:Class="VideoTagger.Desktop.Views.CreateFormView">
-	<Design.DataContext>
-		<!-- This only sets the DataContext for the previewer in an IDE,
-                        to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-		<vm:CreateFormViewModel/>
-	</Design.DataContext>
+    xmlns="https://github.com/avaloniaui"
+    xmlns:vm="using:VideoTagger.Desktop.ViewModels"
+    xmlns:converters="clr-namespace:VideoTagger.Desktop.Converters;assembly=VideoTagger.Desktop"
+    xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
+    xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    x:CompileBindings="False"
+    mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+    x:Class="VideoTagger.Desktop.Views.CreateFormView">
+    <Design.DataContext>
+        <vm:CreateFormViewModel />
+    </Design.DataContext>
 
-  <UserControl.Resources>
-    <converters:OptionsFieldToBoolConverter x:Key="OptionsToTrue" />
-  </UserControl.Resources>
-	<Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,Auto">
-    <TextBlock  Grid.Row="0" Margin="0,0,50,0" Grid.Column="0" VerticalAlignment="Center">Form Name</TextBlock>
-    <TextBox Grid.Row="0" Grid.Column="1" Width="200" Text="{Binding FormName}" />
-    <TextBlock Grid.Row="1" Grid.Column="0">Fields</TextBlock>
-		<ItemsControl Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" ItemsSource="{Binding FieldsList}" >
-			<ItemsControl.ItemTemplate>
-				<DataTemplate>
-					<StackPanel Orientation="Horizontal" Margin="0 5">
-						<TextBox Width="150" Watermark="Field Name" Text="{Binding Name}" Margin="0,0,5,0"/>
-						<ComboBox SelectedIndex="{Binding FieldType}" Margin="5,0,10,0"  MaxDropDownHeight="100">
-							<ComboBoxItem>TextBox</ComboBoxItem>
-							<ComboBoxItem>CheckBox</ComboBoxItem>
-							<ComboBoxItem>ComboBox</ComboBoxItem>
-						</ComboBox>
-            <TextBox Width="150" Text="{Binding Options}" 
-            IsVisible="{Binding FieldType,Mode=OneWay, Converter={StaticResource OptionsToTrue}}" Watermark="Options"  > </TextBox>
-            <Button CommandParameter="{Binding}"
-                          Command="{Binding $parent[ItemsControl].DataContext.DeleteFieldCommand}" >Delete</Button>
-					</StackPanel>
-				</DataTemplate>
-			</ItemsControl.ItemTemplate>
-		</ItemsControl>
-    <Button Grid.Row="3" Command="{Binding AddFieldCommand}">Add Field</Button>
-    <Button Grid.Row="4" Command="{Binding SubmitFormCommand}">Submit</Button>
-  </Grid>
+    <UserControl.Resources>
+        <converters:OptionsFieldToBoolConverter x:Key="OptionsToTrue" />
+        <converters:StringsMatchToVisibileConverter x:Key="MatchToVisibile" />
+        <Style x:Key="ItemStyle" Selector="ListBoxItem">
+            <Setter Property="Background" Value="DarkBlue"></Setter>
+        </Style>
+    </UserControl.Resources>
+    <Grid RowDefinitions="Auto,*,Auto" ColumnDefinitions="Auto,*,auto,auto">
+        <Label Grid.Column="0" Grid.ColumnSpan="3" FontWeight="Black" FontSize="32"
+               HorizontalAlignment="Center" Margin="10"
+               FontFamily="{StaticResource RobotoFont}" Content="{Binding Title}" />
+
+        <!-- Form Configuration -->
+        <Grid Grid.ColumnDefinitions="Auto,Auto,Auto" Grid.RowDefinitions="Auto,Auto,Auto,Auto" Grid.Row="1"
+              Grid.Column="0">
+            <TextBlock Grid.Row="0" Margin="0,0,50,0" Grid.Column="0" VerticalAlignment="Center">Form Name</TextBlock>
+            <TextBox Grid.Row="0" Grid.Column="1" MinWidth="200" MaxHeight="35" Text="{Binding FormName}" />
+            <TextBlock Grid.Row="1" Grid.Column="0">Fields</TextBlock>
+            <ItemsControl Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" ItemsSource="{Binding FieldsList}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal" Margin="0 5">
+                            <TextBox Width="150" Watermark="Field Name" Text="{Binding Name}" Margin="0,0,5,0" />
+                            <ComboBox SelectedIndex="{Binding FieldType}" Margin="5,0,10,0" MaxDropDownHeight="100">
+                                <ComboBoxItem>TextBox</ComboBoxItem>
+                                <ComboBoxItem>CheckBox</ComboBoxItem>
+                                <ComboBoxItem>ComboBox</ComboBoxItem>
+                            </ComboBox>
+                            <TextBox Width="150" Text="{Binding Options}"
+                                     IsVisible="{Binding FieldType,Mode=OneWay, Converter={StaticResource OptionsToTrue}}"
+                                     Watermark="Options">
+                            </TextBox>
+                            <Button CommandParameter="{Binding}"
+                                    Command="{Binding $parent[ItemsControl].DataContext.DeleteFieldCommand}">
+                                Delete
+                            </Button>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Top" Grid.Row="3" Grid.Column="0"
+                        Grid.ColumnSpan="3">
+                <Button Command="{Binding AddFieldCommand}">Add Field</Button>
+                <Button Command="{Binding SubmitFormCommand}">Save</Button>
+                <Button Command="{Binding DeleteFormCommand}"
+                        IsVisible="{Binding SelectedForm,Converter={x:Static ObjectConverters.IsNotNull}}">Delete</Button>
+            </StackPanel>
+        </Grid>
+
+        <!-- Existing Forms -->
+        <ListBox Grid.Row="0" Grid.RowSpan="3" Grid.ColumnSpan="2" Grid.Column="2"
+                 ItemsSource="{Binding Forms}">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel>
+                        <Label Content="{Binding}" />
+                        <Label Content="Current">
+                            <Label.IsVisible>
+                                <MultiBinding Converter="{StaticResource MatchToVisibile}">
+                                    <Binding />
+                                    <Binding>
+                                        <Binding.Path>$parent[ListBox].DataContext.SelectedForm.FormName</Binding.Path>
+                                    </Binding>
+                                </MultiBinding>
+                            </Label.IsVisible>
+                        </Label>
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+            <i:Interaction.Behaviors>
+                <ia:EventTriggerBehavior EventName="DoubleTapped">
+                    <ia:InvokeCommandAction Command="{Binding FormSelectedCommand}"
+                                            PassEventArgsToCommand="True" />
+                </ia:EventTriggerBehavior>
+            </i:Interaction.Behaviors>
+        </ListBox>
+        <Button Grid.Column="2" Grid.Row="2"
+                Command="{Binding NewFormCommand}">
+            Add New Form
+        </Button>
+        <Button Grid.Column="3" Grid.Row="2"
+                Command="{Binding SetDefaultCommand}">
+            Set Default
+        </Button>
+    </Grid>
 </UserControl>

@@ -14,7 +14,7 @@ sealed class Program
         try
         {
             var appBuilder = BuildAvaloniaApp();
-            appBuilder.StartWithClassicDesktopLifetime(args);
+                    appBuilder.StartWithClassicDesktopLifetime(args);
         }
         catch (Exception ex)
         {

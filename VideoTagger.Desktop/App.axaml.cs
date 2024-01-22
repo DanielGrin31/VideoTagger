@@ -57,7 +57,7 @@ public partial class App : Application
         services.AddTransient<VideoLoader>();
         services.AddSingleton<IFormManager, FileFormManager>();
         services.AddTransient<IFormBuilder, FormBuilder>();
-        services.AddTransient<IFormExporter, JsonFormExporter>();
+        services.AddTransient<IFormExporter, CsvFormExporter>();
         RegisterViews(services);
     }
     internal static void RegisterViews(IServiceCollection services)

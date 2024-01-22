@@ -3,6 +3,7 @@
 	xmlns:vm="using:VideoTagger.Desktop.ViewModels"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:controls="clr-namespace:VideoTagger.Desktop.Controls;assembly=VideoTagger.Desktop"
+	xmlns:core="clr-namespace:System;assembly=mscorlib"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" d:DesignWidth="800"
 	 d:DesignHeight="450" x:DataType="vm:VideoPlayerViewModel" 
 	CurrentVideo="{Binding CurrentVideo,Mode=OneWay}"
@@ -12,13 +13,22 @@
              to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
 		<vm:VideoPlayerViewModel/>
 	</Design.DataContext>
+	<UserControl.Resources>
+		<core:Int32 x:Key="skipForward">5</core:Int32>
+		<core:Int32 x:Key="skipBackward">-5</core:Int32>
+	</UserControl.Resources>
 	<Grid ColumnDefinitions="*" RowDefinitions="*,auto">
 			<controls:VideoView MediaPlayer="{Binding MediaPlayer}" Grid.Column="0" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
 		<!-- Row 2 -->
 		<StackPanel Grid.Row="1" Grid.Column="0" HorizontalAlignment="Center" Orientation="Horizontal">
-			<Button Content="Prev" HorizontalAlignment="Center" Command="{Binding PrevVideoCommand}"/>
-			<Button Content="Play/Stop" HorizontalAlignment="Center" Command="{Binding PlayVideoCommand}"/>
-			<Button Content="Next" HorizontalAlignment="Center" Command="{Binding NextVideoCommand}"/>
+			<Button Margin="5 5 5 0" Classes="BtnStyle1" Content="Skip Backwards" Command="{Binding MoveMediaCommand}"
+			        CommandParameter="{StaticResource skipBackward}"/>
+			<Button Margin="5 5 5 0" Classes="BtnStyle1" Content="Prev" Command="{Binding PrevVideoCommand}"/>
+			<Button Margin="5 5 5 0" Classes="BtnStyle1"  Content="Play/Stop" Command="{Binding PlayVideoCommand}"/>
+			<Button Margin="5 5 5 0" Classes="BtnStyle1" Content="Next" Command="{Binding NextVideoCommand}"/>
+			<Button Margin="5 5 5 0" Classes="BtnStyle1" Content="Mute" Command="{Binding ToggleMuteCommand}"/>
+			<Button Margin="5 5 5 0" Classes="BtnStyle1" Content="Skip Forward" Command="{Binding MoveMediaCommand}"
+			        CommandParameter="{StaticResource skipForward}"/>
 		</StackPanel>
 	</Grid>
 </UserControl>
