@@ -106,7 +106,7 @@ public partial class VideoPlayerViewModel : ViewModelBase, IDisposable
             return;
         }
         var time=MediaPlayer.Time + diff*1000;
-        time=long.Clamp(time, 0, MediaPlayer.Media!.Duration-100);
+        time=long.Clamp(time, 0, MediaPlayer.Media!.Duration);
         if (MediaPlayer.State == VLCState.Ended&&diff<0)
         {
             MediaPlayer.Stop();
