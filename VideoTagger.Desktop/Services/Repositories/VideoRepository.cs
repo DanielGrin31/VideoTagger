@@ -13,6 +13,12 @@ namespace VideoTagger.Desktop.Services.Repositories
     {
         private int currentIndex = 0;
         private string[] videos = new string[0];
+        private IFileHasher _Hasher;
+
+        public VideoRepository(IFileHasher hasher)
+        {
+            _Hasher = hasher;
+        }
 
         public event EventHandler<VideoSourceUpdatedEventArgs> SourceUpdated;
 
@@ -49,10 +55,11 @@ namespace VideoTagger.Desktop.Services.Repositories
             return Task.FromResult(videos.Length - 1 > currentIndex);
         }
 
-        public void MarkHorror(string video)
+        public async Task MarkHorror(string video)
         {
-            using var writer = File.AppendText("horrors.txt");
-            writer.WriteLine(video);
+            await using var writer = File.AppendText("horrors.txt");
+            var hash=await _Hasher.GetHash(video);
+            await writer.WriteLineAsync(hash);
         }
 
         public string[] GetHorrors()

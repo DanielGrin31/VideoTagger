@@ -23,6 +23,7 @@ namespace VideoTagger.Desktop.ViewModels
         [ObservableProperty] ObservableCollection<VideoReviewItem> _videoReviews = [];
         [ObservableProperty] private int _currentIndex = 0;
         private string _currentVideo = "";
+        private IFileHasher _Hasher;
 
         public string CurrentVideo
         {
@@ -35,7 +36,7 @@ namespace VideoTagger.Desktop.ViewModels
         }
 
         public VideoTaggerViewModel(
-            IFormManager formManager, IVideoRepository videoRepository)
+            IFormManager formManager, IVideoRepository videoRepository, IFileHasher hasher)
         {
             var player = this.Build<VideoPlayerViewModel>();
             var form = this.Build<VideoFormViewModel>();
@@ -44,6 +45,7 @@ namespace VideoTagger.Desktop.ViewModels
             VideoForm = form;
             _forms = formManager;
             _videoRepository = videoRepository;
+            _Hasher = hasher;
             _videoRepository.SourceUpdated += VideoSourceUpdated;
             FormNames = _forms.GetFormNames();
         }
@@ -63,12 +65,12 @@ namespace VideoTagger.Desktop.ViewModels
             List<VideoReviewItem> reviews = new List<VideoReviewItem>();
             foreach (var video in videos)
             {
-                string relativePath = Path.GetRelativePath(VideoLoader.CurrentFolder, video);
-                if (horrors.Contains(video))
+                var hash=await _Hasher.GetHash(video);
+                if (horrors.Contains(hash))
                 {
                     reviews.Add(new VideoReviewItem(video, ReviewStatus.Horror));
                 }
-                else if (existing.ContainsKey(relativePath))
+                else if (existing.ContainsKey(hash))
                 {
                     reviews.Add(new VideoReviewItem(video, ReviewStatus.Seen));
                 }
@@ -91,8 +93,7 @@ namespace VideoTagger.Desktop.ViewModels
                 return;
             }
 
-            string relativePath = Path.GetRelativePath(VideoLoader.CurrentFolder, filePath);
-            await _forms.ExportAsync(e.Fields, relativePath,
+            await _forms.ExportAsync(e.Fields, filePath,
                 ((VideoFormViewModel)VideoForm).SelectedForm?.FormName ?? "default");
             var review = VideoReviews.First(x => x.VideoName == filePath);
             review!.Status = ReviewStatus.Seen;
@@ -111,7 +112,7 @@ namespace VideoTagger.Desktop.ViewModels
         }
 
         [RelayCommand]
-        private void HorrorVideo()
+        private async Task HorrorVideo()
         {
             var player = (VideoPlayer as VideoPlayerViewModel)!;
             string video = player.GetCurrentVideo();
@@ -125,7 +126,7 @@ namespace VideoTagger.Desktop.ViewModels
             VideoReviews = new(VideoReviews.OrderBy(x => x.Status).ToList());
             player.RemoveVideo(horror.VideoName);
             player.PlayCurrentVideo();
-            _videoRepository.MarkHorror(video);
+            await _videoRepository.MarkHorror(video);
         }
 
         [RelayCommand]

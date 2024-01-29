@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Security.Cryptography;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -55,6 +56,7 @@ public partial class App : Application
         });
         services.AddSingleton<IVideoRepository, VideoRepository>();
         services.AddTransient<VideoLoader>();
+        services.AddSingleton<IFileHasher,MD5FileHasher>();
         services.AddSingleton<IFormManager, FileFormManager>();
         services.AddTransient<IFormBuilder, FormBuilder>();
         services.AddTransient<IFormExporter, CsvFormExporter>();

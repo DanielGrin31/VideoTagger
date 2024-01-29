@@ -13,7 +13,7 @@ namespace VideoTagger.Desktop.Services
         FormConfig? SetDefaultForm(string formName);
         bool AddForm(FormConfig form);
         string[] GetFormNames();
-        Task ExportAsync(Dictionary<string, string> Fields, string videoName, string formName);
+        Task ExportAsync(Dictionary<string, string> fields, string videoPath, string formName);
         Task<Dictionary<string, Dictionary<string, string>>> ParseAsync(string formName);
 
         void EditForm(string existing, FormConfig newConfig);

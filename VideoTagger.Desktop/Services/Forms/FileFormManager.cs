@@ -29,9 +29,9 @@ namespace VideoTagger.Desktop.Services.Forms
             return true;
         }
 
-        public Task ExportAsync(Dictionary<string, string> Fields, string videoName, string formName)
+        public Task ExportAsync(Dictionary<string, string> fields, string videoPath, string formName)
         {
-            return _exporter.ExportAsync(Fields, videoName, formName);
+            return _exporter.ExportAsync(fields, videoPath, formName);
         }
 
         public FormConfig? GetConfig(string formName)
